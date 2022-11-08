@@ -57,6 +57,21 @@ def main_parser() -> argparse.ArgumentParser:
     flash_parser.add_argument("vin", help=TEXT_VIN)
     flash_parser.set_defaults(func=doors_lock)
 
+    flash_parser = subparsers.add_parser("acon", description="Start airconditioning.")
+    _add_default_arguments(flash_parser)
+    flash_parser.add_argument("vin", help=TEXT_VIN)
+    flash_parser.set_defaults(func=ac_on)
+
+    flash_parser = subparsers.add_parser("acoff", description="Stop airconditioning.")
+    _add_default_arguments(flash_parser)
+    flash_parser.add_argument("vin", help=TEXT_VIN)
+    flash_parser.set_defaults(func=ac_off)
+
+    flash_parser = subparsers.add_parser("charge", description="Start the charging now.")
+    _add_default_arguments(flash_parser)
+    flash_parser.add_argument("vin", help=TEXT_VIN)
+    flash_parser.set_defaults(func=charge_now)
+
     finder_parser = subparsers.add_parser("vehiclefinder", description="Update the vehicle GPS location.")
     _add_default_arguments(finder_parser)
     finder_parser.add_argument("vin", help=TEXT_VIN)
@@ -202,6 +217,39 @@ async def doors_unlock(args) -> None:
     await account.get_vehicles()
     vehicle = get_vehicle_or_return(account, args.vin)
     status = await vehicle.remote_services.trigger_remote_door_unlock()
+    print(status.state)
+
+
+async def ac_on(args) -> None:
+    """Airconditioning on."""
+    account = MyBMWAccount(
+        args.username, args.password, get_region_from_name(args.region), use_metric_units=(not args.imperial)
+    )
+    await account.get_vehicles()
+    vehicle = get_vehicle_or_return(account, args.vin)
+    status = await vehicle.remote_services.trigger_remote_air_conditioning()
+    print(status.state)
+
+
+async def ac_off(args) -> None:
+    """Airconditioning on."""
+    account = MyBMWAccount(
+        args.username, args.password, get_region_from_name(args.region), use_metric_units=(not args.imperial)
+    )
+    await account.get_vehicles()
+    vehicle = get_vehicle_or_return(account, args.vin)
+    status = await vehicle.remote_services.trigger_remote_air_conditioning_stop()
+    print(status.state)
+
+
+async def charge_now(args) -> None:
+    """Start the charging now."""
+    account = MyBMWAccount(
+        args.username, args.password, get_region_from_name(args.region), use_metric_units=(not args.imperial)
+    )
+    await account.get_vehicles()
+    vehicle = get_vehicle_or_return(account, args.vin)
+    status = await vehicle.remote_services.trigger_charge_now()
     print(status.state)
 
 
