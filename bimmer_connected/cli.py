@@ -47,6 +47,16 @@ def main_parser() -> argparse.ArgumentParser:
     flash_parser.add_argument("vin", help=TEXT_VIN)
     flash_parser.set_defaults(func=light_flash)
 
+    flash_parser = subparsers.add_parser("unlock", description="Unlock the doors.")
+    _add_default_arguments(flash_parser)
+    flash_parser.add_argument("vin", help=TEXT_VIN)
+    flash_parser.set_defaults(func=doors_unlock)
+
+    flash_parser = subparsers.add_parser("lock", description="Lock the doors.")
+    _add_default_arguments(flash_parser)
+    flash_parser.add_argument("vin", help=TEXT_VIN)
+    flash_parser.set_defaults(func=doors_lock)
+
     finder_parser = subparsers.add_parser("vehiclefinder", description="Update the vehicle GPS location.")
     _add_default_arguments(finder_parser)
     finder_parser.add_argument("vin", help=TEXT_VIN)
@@ -170,6 +180,28 @@ async def light_flash(args) -> None:
     await account.get_vehicles()
     vehicle = get_vehicle_or_return(account, args.vin)
     status = await vehicle.remote_services.trigger_remote_light_flash()
+    print(status.state)
+
+
+async def doors_lock(args) -> None:
+    """Trigger the vehicle to lock the doors."""
+    account = MyBMWAccount(
+        args.username, args.password, get_region_from_name(args.region), use_metric_units=(not args.imperial)
+    )
+    await account.get_vehicles()
+    vehicle = get_vehicle_or_return(account, args.vin)
+    status = await vehicle.remote_services.trigger_remote_door_lock()
+    print(status.state)
+
+
+async def doors_unlock(args) -> None:
+    """Trigger the vehicle to unlock the doors."""
+    account = MyBMWAccount(
+        args.username, args.password, get_region_from_name(args.region), use_metric_units=(not args.imperial)
+    )
+    await account.get_vehicles()
+    vehicle = get_vehicle_or_return(account, args.vin)
+    status = await vehicle.remote_services.trigger_remote_door_unlock()
     print(status.state)
 
 
